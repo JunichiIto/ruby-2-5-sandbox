@@ -18,6 +18,21 @@ class RubyTest < Minitest::Test
     ensure
       # ensure
     end
+
+    ruby = <<~RUBY
+      [1].each { |n|
+        1 / 0
+      rescue
+        # rescue
+      else
+        # else
+      ensure
+        # ensure
+      }
+    RUBY
+    assert_raises(SyntaxError) do
+      RubyVM::InstructionSequence.compile(ruby)
+    end
   end
 
   def test_refinements_take_place_in_string_interpolations

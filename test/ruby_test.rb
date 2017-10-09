@@ -1,13 +1,6 @@
 require 'minitest/autorun'
 
 class RubyTest < Minitest::Test
-  def test_top_level_constant_lookup
-    require_relative './class_constants'
-    assert_raises(NameError) do
-      Staff::ItemsController
-    end
-  end
-
   def test_rescue_inside_do_end_block
     [1].each do |n|
       1 / 0
@@ -35,21 +28,39 @@ class RubyTest < Minitest::Test
     end
   end
 
+  def test_top_level_constant_lookup
+    require_relative './class_constants'
+    assert_raises(NameError) do
+      Staff::ItemsController
+    end
+
+    assert Object::ItemsController
+    assert ::ItemsController
+  end
+
   def test_refinements_take_place_in_string_interpolations
     require_relative './refinements_samples'
     assert_equal 'b', C.new.c1
     assert_equal 'b', C.new.c2
   end
 
-  def test_array_append
-    array = [1, 2]
-    assert_equal [1, 2, 3, 4], array.append(3, 4)
+  def test_array_prepend
+    array = [3, 4]
+    assert_equal [1, 2, 3, 4], array.unshift(1, 2)
+    assert_equal [1, 2, 3, 4], array
+
+    array = [3, 4]
+    assert_equal [1, 2, 3, 4], array.prepend(1, 2)
     assert_equal [1, 2, 3, 4], array
   end
 
-  def test_array_prepend
-    array = [3, 4]
-    assert_equal [1, 2, 3, 4], array.prepend(1, 2)
+  def test_array_append
+    array = [1, 2]
+    assert_equal [1, 2, 3, 4], array.push(3, 4)
+    assert_equal [1, 2, 3, 4], array
+
+    array = [1, 2]
+    assert_equal [1, 2, 3, 4], array.append(3, 4)
     assert_equal [1, 2, 3, 4], array
   end
 
@@ -95,6 +106,7 @@ class RubyTest < Minitest::Test
   end
 
   def test_yield_self
+    assert_equal 20, 2.yield_self { |n| n * 10 }
     assert_equal 'HELLO', 'hello'.yield_self { |s| s.upcase }
 
     names = [nil, nil]
@@ -123,10 +135,15 @@ class RubyTest < Minitest::Test
   end
 
   def test_thread_fetch
-    assert_equal 'bar', Thread.current.fetch(:foo, 'bar')
+    Thread.current[:foo] = 'bar'
+    assert_equal 'bar', Thread.current.fetch(:foo, 'baz')
+    assert_equal 'baz', Thread.current.fetch(:hoge, 'baz')
 
-    Thread.current[:foo] = 'baz'
-    assert_equal 'baz', Thread.current.fetch(:foo, 'bar')
+    # 第2引数を指定しない場合はキーが見つからないとエラーになる
+    assert_equal 'bar', Thread.current.fetch(:foo)
+    assert_raises(KeyError) do
+      Thread.current.fetch(:hoge)
+    end
   end
 
   def format_time(t)
@@ -169,6 +186,27 @@ class RubyTest < Minitest::Test
       assert_same h, e.receiver
       assert_equal :bax, e.key
     end
+  end
+
+  def test_regexp
+    text = <<-LOG
+10:00 [INFO] Lorem ipsum dolor sit amet
+10:10 [WARN] Lorem ipsum dolor sit amet
+10:20 [INFO] Lorem ipsum dolor sit amet
+10:25 [DEBUG] Lorem ipsum dolor sit amet
+10:30 [ERROR] Lorem ipsum dolor sit amet
+10:40 [INFO] Lorem ipsum dolor sit amet
+    LOG
+  regexp = /^(?~DEBUG|INFO)$/
+    expected = <<-LOG.lines.map(&:chomp)
+10:10 [WARN] Lorem ipsum dolor sit amet
+10:30 [ERROR] Lorem ipsum dolor sit amet
+    LOG
+    assert_equal expected, text.scan(regexp)
+  end
+
+  def test_unicode_10
+    assert "A\u{1B10A}B".match?(/\p{In_Kana_Extended_A}/)
   end
 
   def test_bundler

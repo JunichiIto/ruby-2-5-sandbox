@@ -116,11 +116,8 @@ class RubyTest < Minitest::Test
     assert_equal 20, 2.yield_self { |n| n * 10 }
     assert_equal 'HELLO', 'hello'.yield_self { |s| s.upcase }
 
-    names = [nil, nil]
-    assert_equal '', names.compact.join(', ').yield_self { |s| s.empty? ? s : "(#{s})"}
-
     names = ['Alice', 'Bob']
-    assert_equal '(Alice, Bob)', names.compact.join(', ').yield_self { |s| s.empty? ? s : "(#{s})"}
+    assert_equal '(Alice, Bob)', names.compact.join(', ').yield_self { |s| "(#{s})" }
   end
 
   def test_string_casecmp

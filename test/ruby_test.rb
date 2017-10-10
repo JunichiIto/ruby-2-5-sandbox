@@ -143,7 +143,6 @@ class RubyTest < Minitest::Test
     assert_equal 'bar', Thread.current.fetch(:foo, 'baz')
     assert_equal 'baz', Thread.current.fetch(:hoge, 'baz')
 
-    # 第2引数を指定しない場合はキーが見つからないとエラーになる
     assert_equal 'bar', Thread.current.fetch(:foo)
     assert_raises(KeyError) do
       Thread.current.fetch(:hoge)
@@ -238,8 +237,9 @@ class RubyTest < Minitest::Test
     require 'erb'
     require 'ostruct'
 
-    namespace = OpenStruct.new(a: 2, b: 3)
     template = 'Result: <%= a * b %>'
+
+    namespace = OpenStruct.new(a: 2, b: 3)
     assert_equal 'Result: 6', ERB.new(template).result(namespace.instance_eval { binding })
 
     assert_equal 'Result: 6', ERB.new(template).result_with_hash(a: 2, b: 3)

@@ -236,4 +236,15 @@ class RubyTest < Minitest::Test
     assert Set[1, 2, 3] === 2
     refute Set[1, 2, 3] === 5
   end
+
+  def test_erb_result_with_hash
+    require 'erb'
+    require 'ostruct'
+
+    namespace = OpenStruct.new(a: 2, b: 3)
+    template = 'Result: <%= a * b %>'
+    assert_equal 'Result: 6', ERB.new(template).result(namespace.instance_eval { binding })
+
+    assert_equal 'Result: 6', ERB.new(template).result_with_hash(a: 2, b: 3)
+  end
 end

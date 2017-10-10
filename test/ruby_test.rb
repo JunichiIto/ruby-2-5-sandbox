@@ -3,7 +3,7 @@ require 'minitest/autorun'
 class RubyTest < Minitest::Test
   def test_rescue_inside_do_end_block
     [1].each do |n|
-      1 / 0
+      n / 0
     rescue
       # rescue
     else
@@ -14,7 +14,7 @@ class RubyTest < Minitest::Test
 
     ruby = <<~RUBY
       [1].each { |n|
-        1 / 0
+        n / 0
       rescue
         # rescue
       else

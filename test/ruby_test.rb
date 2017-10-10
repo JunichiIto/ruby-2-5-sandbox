@@ -98,6 +98,13 @@ class RubyTest < Minitest::Test
     assert_equal({ 'a' => 1, 'b' => 2 }, hash)
   end
 
+  def test_round_floor_ceil_truncate
+    assert_equal 10000000000000000000000000, (10**25).round(2).to_i
+    assert_equal 10000000000000000000000000, (10**25).floor(2).to_i
+    assert_equal 10000000000000000000000000, (10**25).ceil(2).to_i
+    assert_equal 10000000000000000000000000, (10**25).truncate(2).to_i
+  end
+
   def test_integer_sqrt
     assert_equal 3, Integer.sqrt(9)
     assert_equal 1, Integer.sqrt(2)

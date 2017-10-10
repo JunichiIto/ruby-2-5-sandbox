@@ -99,10 +99,10 @@ class RubyTest < Minitest::Test
   end
 
   def test_round_floor_ceil_truncate
-    assert_equal 10000000000000000000000000, (10**25).round(2).to_i
-    assert_equal 10000000000000000000000000, (10**25).floor(2).to_i
-    assert_equal 10000000000000000000000000, (10**25).ceil(2).to_i
-    assert_equal 10000000000000000000000000, (10**25).truncate(2).to_i
+    assert_equal 10000000000000000000000000, (10**25).round(2)
+    assert_equal 10000000000000000000000000, (10**25).floor(2)
+    assert_equal 10000000000000000000000000, (10**25).ceil(2)
+    assert_equal 10000000000000000000000000, (10**25).truncate(2)
   end
 
   def test_integer_sqrt

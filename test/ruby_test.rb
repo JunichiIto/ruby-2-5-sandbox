@@ -117,7 +117,7 @@ class RubyTest < Minitest::Test
     assert_equal 'HELLO', 'hello'.yield_self { |s| s.upcase }
 
     names = ['Alice', 'Bob']
-    assert_equal '(Alice, Bob)', names.compact.join(', ').yield_self { |s| "(#{s})" }
+    assert_equal '(Alice, Bob)', names.join(', ').yield_self { |s| "(#{s})" }
   end
 
   def test_string_casecmp

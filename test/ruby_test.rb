@@ -106,10 +106,12 @@ class RubyTest < Minitest::Test
   end
 
   def test_integer_sqrt
-    assert_equal 3, Integer.sqrt(9)
-    assert_equal 1, Integer.sqrt(2)
+    n = 10**46
+    assert_equal 100000000000000000000000, Integer.sqrt(n)
+    assert_equal 99999999999999991611392, Math.sqrt(n).to_i
 
-    assert_equal 1.414, Math.sqrt(2).round(3)
+    assert_equal 1, Integer.sqrt(3)
+    assert_equal 3, Integer.sqrt(9.9)
   end
 
   def test_yield_self

@@ -246,4 +246,174 @@ class RubyTest < Minitest::Test
 
     assert_equal 'Result: 6', ERB.new(template).result_with_hash(a: 2, b: 3)
   end
+
+  def test_full_message
+    1 / 0
+  rescue => e
+    message = e.full_message
+    assert_match /ZeroDivisionError/, message
+    assert_match %r{divided by 0}, message
+    assert_match /from.*`test_full_message'/, message
+  end
+
+  # any?,all?,none?,one?
+  def test_enumerable_with_pattern_args
+    arr = ['abc', 123]
+    assert arr.any? { |obj| Integer === obj }
+    refute arr.any? { |obj| Float === obj }
+    assert arr.any?(Integer)
+    refute arr.any?(Float)
+
+    arr = ['123-4567', '789-0123']
+    assert arr.all? { |s| /\d+-\d+/ === s }
+    refute arr.all? { |s| /123-\d+/ === s }
+    assert arr.all?(/\d+-\d+/)
+    refute arr.all?(/123-\d+/)
+
+    # none?やone?も同じような考え方で引数を渡せる
+  end
+
+  def test_hash_slice
+    hash = { a: 'Alice', b: 'Bob', c: 'Carol' }
+    assert_equal({ a: 'Alice', c: 'Carol' }, hash.slice(:a, :c))
+  end
+
+  def test_pp
+    respond_to?(:pp)
+  end
+
+  def plus_or_minus(value)
+    case value
+    when 0.method(:<)
+      '+'
+    when 0.method(:>)
+      '-'
+    when 0.method(:==)
+      '0'
+    end
+  end
+
+  def adult?(age)
+    age > 20
+  end
+
+  def child?(age)
+    age < 20
+  end
+
+  def adult_or_child(age)
+    case age
+    when method(:adult?).to_proc
+      '大人です'
+    when method(:child?).to_proc
+      '子どもです'
+    else
+      'はたちです'
+    end
+  end
+
+  def hello(name)
+    "Hello, #{name}!"
+  end
+
+  def test_method_triple_equal
+    assert_equal 'Hello, Alice!', method(:hello) === 'Alice'
+
+    assert_equal '大人です', adult_or_child(21)
+    assert_equal '子どもです', adult_or_child(19)
+    assert_equal 'はたちです', adult_or_child(20)
+  end
+
+  # Module#{attr,attr_accessor,attr_reader,attr_writer}
+  # Module#{define_method,alias_method,undef_method,remove_method}
+  def test_public_module_methods
+    user_class = Class.new
+    user_class.attr_accessor :name
+    user_class.define_method(:hello, -> { "Hello, I am #{name}." })
+    user = user_class.new
+    user.name = 'Alice'
+    assert_equal 'Alice', user.name
+    assert_equal 'Hello, I am Alice.', user.hello
+  end
+
+  def test_start_with
+    s = '123abc'
+    assert s.start_with?(/\d+/)
+    refute s.start_with?(/9\d+/)
+  end
+
+  def test_undump
+    original = "hello \n ''"
+    dumped = original.dump
+    assert_equal "\"hello \\n ''\"", dumped
+    assert_equal original, dumped.undump
+  end
+
+  OldPoint = Struct.new(:x, :y)
+  NewPoint = Struct.new(:x, :y, keyword_init: true)
+  def test_struct_with_keyword_init
+    p1 = OldPoint.new(1, 2)
+    assert_equal 1, p1.x
+    assert_equal 2, p1.y
+
+    p2 = NewPoint.new(y: 20, x: 10)
+    assert_equal 10, p2.x
+    assert_equal 20, p2.y
+  end
+
+  def test_default_value_of_report_on_exception
+    assert Thread.report_on_exception
+  end
+
+  def test_frozen_error
+    s = 'a'.freeze
+    assert_raises(FrozenError) do
+      s.upcase!
+    end
+  end
+
+  # class Test
+  #   attr_accessor :x, :y, :z
+  #   def initialize(x, y, z)
+  #     @x = x
+  #     @y = y
+  #     binding.irb
+  #     @z = z
+  #   end
+  # end
+  # def test_binding_irb
+  #   a = Test.new(1, 2, 3)
+  # end
+
+  require 'securerandom'
+  def test_secure_random_alphanumeric
+    assert_match /^[a-zA-Z0-9]{16}$/, SecureRandom.alphanumeric
+  end
+
+  require "stringio"
+  def test_string_io
+    a = StringIO.new("hoge", 'r+')
+    a.write("abc", "1234")
+    assert_equal 'abc1234', a.string
+  end
+
+  require "tempfile"
+  def test_file_io
+    Tempfile.create do |f|
+      path = f.path
+      File.open(f.path, 'w') do |f|
+        f.write 'xyz', '7890'
+      end
+      assert_equal 'xyz7890', File.read(path)
+    end
+  end
+
+  # Performance of block passing using block parameters is improved by
+  # lazy Proc allocation [Feature #14045]
+  # https://blog.onk.ninja/2017/12/19/ruby_2_5_medama
+
+  # Print error message in bold/underlined text if STDERR is unchanged and a tty.
+  # [Feature #14140] [experimental]
+
+  # https://techracho.bpsinc.jp/hachi8833/2017_11_20/48128
 end
